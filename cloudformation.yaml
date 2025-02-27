@@ -23,18 +23,26 @@ Resources:
                   - 'dynamodb:DeleteItem'
                 Effect: 'Allow'
                 Resource: "*"
+              - Action:
+                  - 'rds-db:connect'  # Add RDS database connection permissions (if needed)
+                Effect: 'Allow'
+                Resource: "*"
+              - Action:
+                  - 'cloudwatch:PutMetricData'  # Add CloudWatch permissions (if needed for monitoring)
+                Effect: 'Allow'
+                Resource: "*"
 
-  # Lambda Function
+  # Lambda Function (Go)
   LambdaFunction:
     Type: AWS::Lambda::Function
     Properties:
-      Handler: index.handler
+      Handler: main    # Handler is the name of the Go binary file (without .exe or .out)
       Role: !GetAtt LambdaExecutionRole.Arn
       FunctionName: CrudHandlerFunction
       Code:
-        S3Bucket: <Your-S3-Bucket-Name>
-        S3Key: <Your-Lambda-Code-Zip>
-      Runtime: nodejs14.x  # Or go runtime depending on what you use
+        S3Bucket: my-crud-lambda-bucket
+        S3Key: lambda-code.zip  
+      Runtime: go1.x  # Go runtime
 
   # API Gateway
   ApiGateway:

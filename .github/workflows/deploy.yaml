@@ -1,0 +1,40 @@
+name: Deploy CRUD Application to AWS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Check out the repository
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      # Set up AWS credentials (you should add these as GitHub secrets)
+      - name: Set up AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: 'us-east-1'
+
+      # Deploy the CloudFormation stack
+      - name: Deploy CloudFormation Template
+        run: |
+          aws cloudformation deploy \
+            --template-file cloudformation.yaml \
+            --stack-name crud-stack \
+            --capabilities CAPABILITY_IAM
+
+      # Optionally, you can output the API URL for confirmation
+      - name: Get API URL
+        run: |
+          api_url=$(aws cloudformation describe-stacks \
+            --stack-name crud-stack \
+            --query "Stacks[0].Outputs[?OutputKey=='ApiUrl'].OutputValue" \
+            --output text)
+          echo "Deployed API is available at $api_url"
